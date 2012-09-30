@@ -25,9 +25,9 @@ module VhostGenerator
                 :instance_ports, :relative_root, :cmdline,
                 :generator, :generator_options
 
-    def initialize(static_folder='public', server_ports='', server_names='',
-        instance_ports='', relative_root='/', cmdlinebuilder=ShellCmdLine,
-        generator='nginx', generator_options='')
+    def initialize(static_folder='public', server_ports='80',
+        server_names='localhost', instance_ports='', relative_root='/',
+        cmdlinebuilder=ShellCmdLine, generator='nginx', generator_options='')
       self.static_folder = static_folder
       self.server_ports = server_ports
       self.server_names = server_names

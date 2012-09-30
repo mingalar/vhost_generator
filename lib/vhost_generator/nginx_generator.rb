@@ -20,7 +20,7 @@ module VhostGenerator
 
     def default_options
       Hash[ 'client_max_body_size' => '4G', 'keepalive_timeout' => '10',
-            'assets_expire_in' => '60d' ].freeze
+            'assets_expire_in' => '60d', 'upstream' => 'appservers' ].freeze
     end
 
     private

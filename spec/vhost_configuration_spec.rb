@@ -14,8 +14,8 @@ describe VhostGenerator::VhostConfiguration do
   end
 
   describe "#server_ports" do
-    it "is empty by default" do
-      expect(subject.server_ports).to be_empty
+    it "is 80 by default" do
+      expect(subject.server_ports).to eql([80])
     end
 
     it "parses to Array of Integer" do
@@ -32,8 +32,8 @@ describe VhostGenerator::VhostConfiguration do
   end
 
   describe "#server_names" do
-    it "is empty by default" do
-      expect(subject.server_names).to be_empty
+    it "is 'localhost' by default" do
+      expect(subject.server_names).to eql(%w(localhost))
     end
 
     it "parses to Array of String" do
