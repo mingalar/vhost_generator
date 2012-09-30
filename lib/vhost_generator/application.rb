@@ -1,4 +1,5 @@
 require 'vhost_generator/version'
+require 'vhost_generator/vhost_configuration'
 require 'optparse'
 require 'ostruct'
 
@@ -10,22 +11,41 @@ module VhostGenerator
   # and run.
   #
   class Application
-    def initialize(name=nil, output_stream=$stdout)
-      @name ||= File.basename($0 || 'vhost-generator')
+    attr_writer :config
+
+    def initialize(output_stream=$stdout)
+      @name = File.basename($0 || 'vhost-generator')
       @output_stream = output_stream
-      @config = OpenStruct.new # XXX
     end
 
     # Run the VhostGenerator application.
-    def run(argv=ARGV)
+    def run
       standard_exception_handling do
-        handle_options(argv)
+        # XXX also load from .env? handle_env ?
+        handle_options(ARGV)
+        config.cmdline << ['cd', Dir.pwd]
+        config.cmdline << [$0] + ARGV
+        @output_stream.puts config.output
       end
+    end
+
+    def config(configurator=VhostGenerator::VhostConfiguration)
+      @config ||= configurator.new # XXX
     end
 
     def handle_options(argv)
       OptionParser.new do |opts|
         opts.banner = "Usage: #{@name} [options]"
+
+        opts.separator ""
+        opts.separator "Application options:"
+        application_options.each { |args| opts.on(*args) }
+
+        opts.separator ""
+        opts.separator "Generator options:"
+        generator_options.each { |args| opts.on(*args) }
+
+        opts.separator ""
 
         opts.on_tail("-v", "--version", "Display the program version.") do
           @output_stream.puts "#{@name}, version #{VhostGenerator::VERSION}"
@@ -37,6 +57,36 @@ module VhostGenerator
           exit(true)
         end
       end.parse(argv)
+    end
+
+    def application_options
+      [
+        ['-f', '--static-folder APP_STATIC_FOLDER',
+                %q{Path of your application's static folder (e.g. public/)},
+                lambda { |value| config.static_folder = value }],
+        ['-l', '--listen LISTEN_PORTS',
+                %q{Public ports to listen on (e.g. 80,81)},
+                lambda { |value| config.server_ports = value }],
+        ['-s', '--server-name SERVER_NAMES',
+                %q{Server names to listen on (e.g. localhost,example.com)},
+                lambda { |value| config.server_names = value }],
+        ['-p', '--instance-port INSTANCE_PORTS',
+                %q{Internal ports where instances listen on (e.g. 5000,5001)},
+                lambda { |value| config.instance_ports = value }],
+        ['-r', '--relative-root RAILS_RELATIVE_URL_ROOT',
+               lambda { |value| config.relative_root = value }],
+      ]
+    end
+
+    def generator_options
+      [
+        ['-g', '--generator GENERATOR',
+               %q{Generator to use to output virtualhost configuration file},
+               lambda { |value| config.generator = value }],
+        ['-o', '--generator-options GENERATOR_OPTIONS',
+                %q{Generator options as comma-separated list of key=value},
+                lambda { |value| config.generator_options = value }],
+      ].freeze
     end
 
     # Provide standard exception handling for the given block.
@@ -58,7 +108,7 @@ module VhostGenerator
 
     # Display the error message that caused the exception.
     def display_error_message(ex)
-      $stderr.puts "#{name} aborted!"
+      $stderr.puts "#{@name} aborted!"
       $stderr.puts ex.message
       $stderr.puts ex.backtrace.join("\n")
     end
