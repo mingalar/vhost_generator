@@ -19,4 +19,9 @@ Gem::Specification.new do |gem|
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
+
+  gem.add_development_dependency('rake', '~> 0.9.2.2')
+  gem.add_development_dependency('cucumber', '~> 1.2.1')
+  gem.add_development_dependency('aruba', '~> 0.4.11')
+  gem.add_development_dependency('rspec', '~> 2.11.0')
 end
