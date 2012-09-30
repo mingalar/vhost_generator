@@ -8,9 +8,9 @@ describe VhostGenerator::Application do
 
     options = Hash[
       'static_folder'     => %w(-f --static-folder),
-      'server_ports'       => %w(-l --listen),
-      'server_names'       => %w(-s --server-name),
-      'instance_ports'     => %w(-p --instance-port),
+      'server_ports'      => %w(-l --listen),
+      'server_names'      => %w(-s --server-name),
+      'instance_ports'    => %w(-p --instance-port),
       'relative_root'     => %w(-r --relative-root),
       'generator'         => %w(-g --generator),
       'generator_options' => %w(-o --generator-options)
