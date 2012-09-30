@@ -62,6 +62,12 @@ module VhostGenerator
         opts.banner = "Usage: #{@name} [options]"
 
         opts.separator ""
+        opts.separator ['Note: all command-line options below also exist as ' \
+                        'environment variables.', 'You may try to setenv all ' \
+                        'uppercase names in the rest of this summary, eg.',
+                        '`export RAILS_RELATIVE_URL_ROOT=/myapp`.'].join($/)
+
+        opts.separator ""
         opts.separator "Application options:"
         application_options.each { |args| opts.on(*args) }
 
@@ -85,10 +91,10 @@ module VhostGenerator
 
     def application_options
       [
-        ['-f', '--static-folder APP_STATIC_FOLDER',
+        ['-f', '--static-folder STATIC_FOLDER',
                 %q{Path of your application's static folder (e.g. public/)},
                 lambda { |value| config.static_folder = value }],
-        ['-l', '--listen LISTEN_PORTS',
+        ['-l', '--listen SERVER_PORTS',
                 %q{Public ports to listen on (e.g. 80,81)},
                 lambda { |value| config.server_ports = value }],
         ['-s', '--server-name SERVER_NAMES',

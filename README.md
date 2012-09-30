@@ -33,9 +33,18 @@ Basic usage:
 
     $ bundle exec vhost-generator -l 80 -s myapp.com -p 5000,5001,5002
 
+Advanced usage: all command-line switches have their equivalent environment variables. See note in `bundle exec vhost-generator --help`.
+
+    $ SERVER_PORTS=80 SERVER_NAMES=myapp.com INSTANCE_PORTS=5000,5001,5002 bundle exec vhost-generator
+
 Protip: pipe with `sudo tee` to save the configuration in your nginx sites-enabled directory.
 
     $ bundle exec vhost-generator -l 80 -s myapp.com -p 5000,5001,5002 | sudo tee /etc/nginx/sites-enabled/myapp
+
+Protip: run through `foreman run` to leverage your application's `.env` (DRY and handy when having a configured `RAILS_RELATIVE_URL_ROOT` for example)
+
+    $ echo RAILS_RELATIVE_URL_ROOT='/myapp' >> .env
+    $ bundle exec foreman run vhost-generator -l 80 -s myapp.com -p 5000,5001,5002
 
 More advanced usages: see `features/` directory or run:
 
