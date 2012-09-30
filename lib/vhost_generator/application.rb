@@ -2,6 +2,7 @@ require 'vhost_generator/version'
 require 'vhost_generator/vhost_configuration'
 require 'optparse'
 require 'ostruct'
+require 'dotenv'
 
 module VhostGenerator
 
@@ -21,6 +22,9 @@ module VhostGenerator
     # Run the VhostGenerator application.
     def run
       standard_exception_handling do
+        # load serialized environment variables from DOTENV files if present.
+        dotenvs = ['.env', ENV['DOTENV']]
+        dotenvs.compact.each { |f| Dotenv.load(f) }
         handle_env(ENV)
         handle_options(ARGV)
         config.cmdline << ['cd', Dir.pwd]
