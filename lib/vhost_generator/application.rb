@@ -21,7 +21,7 @@ module VhostGenerator
     # Run the VhostGenerator application.
     def run
       standard_exception_handling do
-        # XXX also load from .env? handle_env ?
+        handle_env(ENV)
         handle_options(ARGV)
         config.cmdline << ['cd', Dir.pwd]
         config.cmdline << [$0] + ARGV
@@ -31,6 +31,30 @@ module VhostGenerator
 
     def config(configurator=VhostGenerator::VhostConfiguration)
       @config ||= configurator.new # XXX
+    end
+
+    def handle_env(env)
+      if path = env['STATIC_FOLDER']
+        config.static_folder = path
+      end
+      if ports = env['SERVER_PORTS']
+        config.server_ports = ports
+      end
+      if names = env['SERVER_NAMES']
+        config.server_names = names
+      end
+      if ports = env['INSTANCE_PORTS']
+        config.instance_ports = ports
+      end
+      if root = env['RAILS_RELATIVE_URL_ROOT']
+        config.relative_root = root
+      end
+      if generator = env['GENERATOR']
+        config.generator = generator
+      end
+      if options = env['GENERATOR_OPTIONS']
+        config.generator_options = options
+      end
     end
 
     def handle_options(argv)
