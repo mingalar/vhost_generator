@@ -29,7 +29,17 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Basic usage:
+
+    $ bundle exec vhost-generator -l 80 -s myapp.com -p 5000,5001,5002
+
+Protip: pipe with `sudo tee` to save the configuration in your nginx sites-enabled directory.
+
+    $ bundle exec vhost-generator -l 80 -s myapp.com -p 5000,5001,5002 | sudo tee /etc/nginx/sites-enabled/myapp
+
+More advanced usages: see `features/` directory or run:
+
+    $ bundle exec vhost-generator --help
 
 ## Contributing
 
@@ -38,3 +48,5 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+[1]: https://github.com/ddollar/foreman "Foreman"
