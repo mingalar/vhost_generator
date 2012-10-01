@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+bundle install --path .bundle
+
+bundle exec rake features
+
+bundle exec rake spec
