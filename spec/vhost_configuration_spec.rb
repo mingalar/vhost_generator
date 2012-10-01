@@ -79,20 +79,6 @@ describe VhostGenerator::VhostConfiguration do
     end
   end
 
-  describe "#cmdline" do
-    it "is empty by default" do
-      subject.cmdline.should be_empty
-    end
-
-    it "can be append to using the shovel operator" do
-      subject.cmdline.should respond_to(:<<)
-    end
-
-    it "can be coerced into string" do
-      subject.cmdline.should respond_to(:to_str)
-    end
-  end
-
   describe "#generator" do
     it "is present by default" do
       expect(subject.generator).to be

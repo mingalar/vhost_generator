@@ -1,4 +1,5 @@
 require 'vhost_generator/version'
+require 'vhost_generator/cmdline_builder'
 require 'vhost_generator/vhost_configuration'
 require 'optparse'
 require 'ostruct'
@@ -27,8 +28,7 @@ module VhostGenerator
         dotenvs.compact.each { |f| Dotenv.load(f) }
         handle_env(ENV)
         handle_options(ARGV)
-        config.cmdline << ['cd', Dir.pwd]
-        config.cmdline << [$0] + ARGV
+        config.cmdline = CmdlineBuilder.new(config, Dir.pwd, $0, ENV)
         @output_stream.puts config.output
       end
     end

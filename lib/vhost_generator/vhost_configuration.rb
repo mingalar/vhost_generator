@@ -3,37 +3,25 @@ require 'shellwords'
 
 module VhostGenerator
 
-  # Represents a Shell command line (to display in vhost comments)
-  # TODO: make it a real class with a more narrow interface than Array
-  class ShellCmdLine < Array
-    def to_str
-      parts = self.collect { |cmd| Shellwords.join(cmd) }
-      if parts.length > 1
-        "(" + parts.join(' && ') + ")"
-      else
-        parts.join
-      end
-    end
-  end
-
   ###########################################################################
   # VhostConfiguration stores all the configuration values (to read from)
   # +env+ or +cmdline+ needed to render the configuration template.
   #
   class VhostConfiguration
     attr_reader :static_folder, :server_ports, :server_names,
-                :instance_ports, :relative_root, :cmdline,
+                :instance_ports, :relative_root,
                 :generator, :generator_options
+    attr_accessor :cmdline
 
     def initialize(static_folder='public', server_ports='80',
         server_names='localhost', instance_ports='', relative_root='/',
-        cmdlinebuilder=ShellCmdLine, generator='nginx', generator_options='')
+        generator='nginx', generator_options='', cmdline=nil)
       self.static_folder = static_folder
       self.server_ports = server_ports
       self.server_names = server_names
       self.instance_ports = instance_ports
       self.relative_root = relative_root
-      self.cmdline = cmdlinebuilder.new
+      self.cmdline = cmdline # usually set later using attr_writer
       self.generator = generator
       self.generator_options = generator_options
     end
@@ -75,8 +63,6 @@ module VhostGenerator
     end
 
     protected
-
-    attr_writer :cmdline
 
     def generator_for(name)
       raise ArgumentError, "unsupported generator: %s, try any of %s." % [
