@@ -8,10 +8,8 @@ also every time the virtualhost parameters (such as the number of instances to
 run and the ports where the instances are listening).
 
 The gem features tries to integrate with the [foreman][1] gem by:
-* reading configuration parameters from `ENV` (or from the `.env` file if present)
-* detecting whether to proxy to tcp or unix socket from `Procfile` if present
-* reading configuration from foreman's standard environment variables to allow
-for generating a virtualhost that matches the last `foreman export`.
+* reading configuration parameters from `ENV` (or from the `.env` file if invoked via `foreman run`)
+
 
 ## Installation
 
@@ -37,26 +35,22 @@ Advanced usage: all command-line switches have their equivalent environment vari
 
     $ SERVER_PORTS=80 SERVER_NAMES=myapp.com INSTANCE_PORTS=5000,5001,5002 bundle exec vhost-generator
 
-Advanced usage for lazy people: environment variables may be saved into the `.env` file or into another file whose name is given in `ENV['DOTENV']`.
-This last option is nice, as it allows to store the environment in a file and reuse it later to generate the same virtualhost configurations.
-
-    $ echo "SERVER_PORTS=80\nSERVER_NAMES=myapp.com\nINSTANCE_PORTS=5000,5001,5002" >> my.env
-    $ DOTENV=my.env bundle exec vhost-generator
-
 More advanced usages: see `features/` directory or run:
 
     $ bundle exec vhost-generator --help
 
 ## Tips
 
-Protip: pipe with `sudo tee` to save the configuration in your nginx sites-enabled directory.
+Pipe with `sudo tee` to save the configuration in your nginx sites-enabled directory.
 
     $ bundle exec vhost-generator -l 80 -s myapp.com -p 5000,5001,5002 | sudo tee /etc/nginx/sites-enabled/myapp
 
-Protip: run through `foreman run` to leverage your application's `.env` (DRY and handy when having a configured `RAILS_RELATIVE_URL_ROOT` for example)
+Run through `foreman run` to leverage your application's `.env` (DRY and handy when having a configured `RAILS_RELATIVE_URL_ROOT` for example).
 
     $ echo RAILS_RELATIVE_URL_ROOT='/myapp' >> .env
     $ bundle exec foreman run vhost-generator -l 80 -s myapp.com -p 5000,5001,5002
+
+Check the comment at top of each virtualhost configuration file for a command-line that can regenerate the file.
 
 ## Contributing
 
