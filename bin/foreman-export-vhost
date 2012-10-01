@@ -1,0 +1,260 @@
+#!/usr/bin/env ruby
+
+=begin
+Wraps "foreman export" and "vhost-generator" in a single command.
+TODO: rewrite as a real application, not just a glorified shell script.
+=end
+
+require 'optparse'
+require 'ostruct'
+require 'shellwords'
+
+class ForemanExportApplication
+  def initialize(output_stream)
+    @output_stream = output_stream
+  end
+
+  def run(argv)
+    standard_exception_handling do
+      handle_arguments!(argv)
+      apply_defaults_and_sanitize_config
+      config.instance_ports = InstancePortCalculator.new(config).apply
+      commands = String(ShellBuilder.new(config, argv).apply)
+      if config.dry_run
+        puts commands
+        puts "# Now, try to run this script again without the --dry-run switch!"
+      else
+        exec commands
+      end
+    end
+  end
+
+  protected
+
+  def config
+    @config ||= OpenStruct.new
+  end
+
+  def handle_arguments!(argv)
+    OptionParser.new do |opts|
+      opts.banner = "Usage: foreman-export-vhost FORMAT LOCATION"
+
+      opts.separator ""
+      opts.separator "Foreman options:"
+      foreman_options.each { |args| opts.on(*args) }
+
+      opts.separator ""
+      opts.separator "Vhost-generator options:"
+      generator_options.each { |args| opts.on(*args) }
+
+      opts.separator ""
+
+      opts.on_tail("-h", "--help", "-H", "Display this help message.") do
+        puts opts
+        exit(true)
+      end
+    end.parse!(argv)
+  end
+
+  def foreman_options
+    [
+      ['-a', '--app=APP', lambda { |value| config.app = value }],
+      ['-l', '--log=LOG', lambda { |value| config.log = value }],
+      ['-e', '--env=ENV',
+             '# Specify an environment file to load, defaults to .env',
+             lambda { |value| config.env = value }],
+      ['-p', '--port=N',
+             '# Default: 5000',
+             lambda { |value| config.port = Integer(value) }],
+      ['-u', '--user=USER', lambda { |value| config.user = value }],
+      ['-t', '--template=TEMPLATE', lambda { |value| config.template = value }],
+      ['-c', '--concurrency=alpha=5,bar=3',
+             lambda { |value| config.concurrency = value }],
+      ['-f', '--procfile=PROCFILE',
+             '# Default: Procfile',
+             lambda { |value| config.procfile = value }],
+      ['-d', '--root=ROOT',
+             '# Default: Procfile directory',
+             lambda { |value| config.root = value }],
+    ].freeze
+  end
+
+  def generator_options
+    [
+      ['-F', '--static-folder=FOLDER',
+             '# Default: "public" folder in Procfile directory',
+             lambda { |value| config.static_folder = value }],
+      ['-L', '--server-ports=PORTS',
+             '# Default: 80',
+             lambda { |value| config.server_ports = value }],
+      ['-S', '--server-names=NAMES',
+             '# Default: localhost',
+             lambda { |value| config.server_names = value }],
+      ['-K', '--foreman-process-type=TYPE',
+             '# Default: web (must have entry of that name in Procfile)',
+             lambda { |value| config.process_type = value }],
+      ['-G', '--generator=GENERATOR',
+             '# Default: nginx (only supported for now)',
+             lambda { |value| config.generator = value }],
+      ['-N', '--dry-run', lambda { |value| config.dry_run = true }],
+      ['-R', '--stop-start-service',
+             '# Starts and stops APP service (may not work everywhere)',
+             lambda { |value| config.service = true }],
+    ].freeze
+  end
+
+  def apply_defaults_and_sanitize_config
+    config.app ||= 'myapp'
+    config.port ||= 5000
+    config.procfile ||= 'Procfile'
+    config.procfile = File.expand_path(config.procfile)
+    config.root ||= File.dirname(config.procfile)
+    config.root = File.expand_path(config.root)
+    config.static_folder ||= File.join(config.root, 'public')
+    config.static_folder = File.expand_path(config.static_folder)
+    config.generator ||= 'nginx'
+    config.process_type ||= 'web'
+  end
+
+  class InstancePortCalculator
+    attr_reader :config
+
+    def initialize(config)
+      @config = config
+    end
+
+    def apply
+      c = process_concurrency(config.concurrency, config.process_type)
+      o = process_offset(config.procfile, config.process_type)
+      raise ArgumentError, "Can't find process type %s in %s, sorry." % [
+        config.process_type.inspect, config.procfile.inspect
+      ] unless o
+      base_port = config.port + 100 * o
+      (base_port...base_port + c).to_a.join(',')
+    end
+
+    def process_concurrency(concurrency, process_type)
+      if concurrency && process_type
+        per_type = Hash[concurrency.split(',').map { |v| v.split('=', 2) }]
+        Integer(per_type[process_type] || 1)
+      else
+        1
+      end
+    end
+
+    def process_offset(procfile, process_type)
+      process_type_re = %r(#{Regexp.escape(process_type)}:)
+      File.read(procfile).lines.each_with_index do |l,i|
+        return i if l =~ process_type_re
+      end
+      nil # not found
+    end
+  end
+
+  class ShellBuilder
+    def initialize(config, argv, commands=Array.new)
+      @config = config
+      @argv = argv
+      @commands = commands
+    end
+
+    def to_str
+      commands.collect { |c| c.join(' ') }.join($/)
+    end
+
+    def apply
+      commands << %w(bundle exec foreman run vhost-generator) +
+                  escape(generator_flags) +
+                  %w(| sudo tee) + escape(vhost_config)
+      commands << %w(sudo service) + escape(service) + %w(reload)
+      commands << %w(sudo service) + escape(app) +
+                  %w(stop >/dev/null 2>&1 || true) if config.service
+      commands << %w(sudo rm -rf) +
+                  Array(Shellwords.escape("#{target}/#{app}") + "-*.conf")
+      commands << %w(sudo bundle exec foreman export) +
+                  escape(argv + foreman_flags)
+      commands << %w(sudo service) + escape(app) + %w(start)
+      commands << ['echo',
+                   '"Finished, now open your browser and see if all works."']
+      self
+    end
+
+    protected
+
+    attr_reader :config, :argv, :commands
+
+    def generator_flags(flags=Array.new)
+      flags << '-f' << config.static_folder if config.static_folder
+      flags << '-l' << config.server_ports if config.server_ports
+      flags << '-s' << config.server_names if config.server_names
+      flags << '-p' << config.instance_ports if config.instance_ports
+      flags << '-g' << config.generator if config.generator
+      flags << '-o' << "upstream=#{app}" if config.generator == 'nginx' && app
+    end
+
+    def foreman_flags(flags=Array.new)
+      flags << '-a' << config.app if config.app
+      flags << '-l' << config.log if config.log
+      flags << '-e' << config.env if config.env
+      flags << '-p' << String(config.port) if config.port
+      flags << '-u' << config.user if config.user
+      flags << '-t' << config.template if config.template
+      flags << '-c' << config.concurrency if config.concurrency
+      flags << '-f' << config.procfile if config.procfile
+      flags << '-d' << config.root if config.root
+    end
+
+    def app
+      config.app
+    end
+
+    def service
+      config.generator # nginx
+    end
+
+    def target
+      argv[1] # eg. /etc/init
+    end
+
+    def vhost_config
+      "/etc/#{service}/sites-enabled/rails-#{app}.conf"
+    end
+
+    def escape(args)
+      Array(args).map { |c| Shellwords.shellescape(c) }
+    end
+  end
+
+  private
+
+  def puts(*args)
+    @output_stream.puts(*args)
+  end
+
+  # Provide standard exception handling for the given block.
+  def standard_exception_handling
+    begin
+      yield
+    rescue SystemExit => ex
+      # Exit silently with current status
+      raise
+    rescue OptionParser::InvalidOption => ex
+      $stderr.puts ex.message
+      exit(false)
+    rescue Exception => ex
+      # Exit with error message
+      display_error_message(ex)
+      exit(false)
+    end
+  end
+
+  # Display the error message that caused the exception.
+  def display_error_message(ex)
+    $stderr.puts "#{@name} aborted!"
+    $stderr.puts ex.message
+    $stderr.puts ex.backtrace.join("\n")
+  end
+end
+
+ForemanExportApplication.new($stdout).run(ARGV)
+
