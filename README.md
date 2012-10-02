@@ -39,6 +39,10 @@ More advanced usages: see `features/` directory or run:
 
     $ bundle exec vhost-generator --help
 
+This gem also contains a wrapper to `foreman export` that will extract as many parameters from your `foreman export` command-line to make your generated virtualhost consistent with your `Procfile`, especially regarding the instance ports used.
+
+    $ bundle exec foreman-export-vhost --help
+
 ## Tips
 
 Pipe with `sudo tee` to save the configuration in your nginx sites-enabled directory.
