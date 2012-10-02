@@ -156,6 +156,7 @@ class ForemanExportApplication
       @config = config
       @argv = argv
       @commands = commands
+      commands << %w(set -e)
     end
 
     def to_str
