@@ -174,9 +174,14 @@ class ForemanExportApplication
                   Array(Shellwords.escape("#{target}/#{app}") + "-*.conf")
       commands << %w(sudo bundle exec foreman export) +
                   escape(argv + foreman_flags)
-      commands << %w(sudo service) + escape(app) + %w(start)
-      commands << ['echo',
-                   '"Finished, now open your browser and see if all works."']
+      message = 'Finished, now '
+      if config.service
+        commands << %w(sudo service) + escape(app) + %w(start)
+      else
+        message = "start the #{escape(app)} service, "
+      end
+      message << "open your browser and see if everything works."
+      commands << ['echo', '"' + message + '"']
       self
     end
 

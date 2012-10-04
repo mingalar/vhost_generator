@@ -57,6 +57,6 @@ Feature: Wrap "foreman export"
     And the output should contain:
       """
       sudo service MYAPP start
-      echo "Finished, now open your browser and see if all works."
+      echo "Finished, now open your browser and see if everything works."
       # Now, try to run this script again without the --dry-run switch!
       """
