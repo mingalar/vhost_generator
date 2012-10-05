@@ -96,6 +96,9 @@ class ForemanExportApplication
       ['-G', '--generator=GENERATOR',
              '# Default: nginx (only supported for now)',
              lambda { |value| config.generator = value }],
+      ['-O', '--generator-options=OPTIONS',
+             '# Comma-separated list of key=value',
+             lambda { |value| config.generator_options = value }],
       ['-N', '--dry-run', lambda { |value| config.dry_run = true }],
       ['-R', '--stop-start-service',
              '# Starts and stops APP service (may not work everywhere)',
@@ -190,12 +193,14 @@ class ForemanExportApplication
     attr_reader :config, :argv, :commands
 
     def generator_flags(flags=Array.new)
+      flags << '-a' << config.app if config.app
       flags << '-f' << config.static_folder if config.static_folder
       flags << '-l' << config.server_ports if config.server_ports
       flags << '-s' << config.server_names if config.server_names
       flags << '-p' << config.instance_ports if config.instance_ports
       flags << '-g' << config.generator if config.generator
-      flags << '-o' << "upstream=#{app}" if config.generator == 'nginx' && app
+      flags << '-o' << config.generator_options if config.generator_options
+      flags
     end
 
     def foreman_flags(flags=Array.new)
@@ -208,6 +213,7 @@ class ForemanExportApplication
       flags << '-c' << config.concurrency if config.concurrency
       flags << '-f' << config.procfile if config.procfile
       flags << '-d' << config.root if config.root
+      flags
     end
 
     def app
