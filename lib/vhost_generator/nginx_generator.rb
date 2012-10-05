@@ -9,7 +9,9 @@ module VhostGenerator
     attr_reader :cfg, :options
     def initialize(cfg, options={})
       @cfg = cfg
-      @options = OpenStruct.new(default_options.merge(options)).freeze
+      @options = OpenStruct.new(default_options.merge(options))
+      @options.upstream ||= cfg.application
+      @options.freeze
     end
 
     def render
@@ -20,7 +22,7 @@ module VhostGenerator
 
     def default_options
       Hash[ 'client_max_body_size' => '4G', 'keepalive_timeout' => '10',
-            'assets_expire_in' => '60d', 'upstream' => 'appservers' ].freeze
+            'assets_expire_in' => '60d' ].freeze
     end
 
     private
