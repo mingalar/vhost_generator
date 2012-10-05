@@ -8,14 +8,16 @@ module VhostGenerator
   # +env+ or +cmdline+ needed to render the configuration template.
   #
   class VhostConfiguration
-    attr_reader :static_folder, :server_ports, :server_names,
+    attr_reader :application, :static_folder, :server_ports, :server_names,
                 :instance_ports, :relative_root,
                 :generator, :generator_options
     attr_accessor :cmdline
 
-    def initialize(static_folder='public', server_ports='80',
-        server_names='localhost', instance_ports='', relative_root='/',
-        generator='nginx', generator_options='', cmdline=nil)
+    def initialize(application='myapp', static_folder='public',
+        server_ports='80', server_names='localhost', instance_ports='',
+        relative_root='/', generator='nginx', generator_options='',
+        cmdline=nil)
+      self.application = application
       self.static_folder = static_folder
       self.server_ports = server_ports
       self.server_names = server_names
@@ -24,6 +26,12 @@ module VhostGenerator
       self.cmdline = cmdline # usually set later using attr_writer
       self.generator = generator
       self.generator_options = generator_options
+    end
+
+    def application=(app)
+      app = String(app).strip.gsub(/\s+/, '_') # avoid blanks in app name.
+      raise ArgumentError, "application is required" unless app && !app.empty?
+      @application = app
     end
 
     def static_folder=(folder)

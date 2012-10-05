@@ -33,6 +33,9 @@ module VhostGenerator
     end
 
     def handle_env(env)
+      if app = env['APPLICATION']
+        config.application = app
+      end
       if path = env['STATIC_FOLDER']
         config.static_folder = path
       end
@@ -90,6 +93,9 @@ module VhostGenerator
 
     def application_options
       [
+        ['-a', '--application APPLICATION',
+           %q{Unique name of your application (e.g. myapp)},
+           lambda { |value| config.application = value }],
         ['-f', '--static-folder STATIC_FOLDER',
                 %q{Path of your application's static folder (e.g. public/)},
                 lambda { |value| config.static_folder = value }],

@@ -7,6 +7,7 @@ describe VhostGenerator::Application do
     before { subject.config = config }
 
     options = Hash[
+      'application'       => %w(-a --application),
       'static_folder'     => %w(-f --static-folder),
       'server_ports'      => %w(-l --listen),
       'server_names'      => %w(-s --server-name),

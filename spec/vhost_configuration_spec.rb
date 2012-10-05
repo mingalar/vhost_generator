@@ -1,6 +1,24 @@
 require 'vhost_generator/vhost_configuration'
 
 describe VhostGenerator::VhostConfiguration do
+  describe "#application" do
+    it "is 'myapp' by default" do
+      expect(subject.application).to eql('myapp')
+    end
+
+    it "is normalized on the fly" do
+      expect {
+        subject.application = '  my   sanitized  app '
+      }.to change(subject, :application).to('my_sanitized_app')
+    end
+
+    it "is required" do
+      expect {
+        subject.application = ''
+      }.to raise_error(ArgumentError, /required/)
+    end
+  end
+
   describe "#static_folder" do
     it "is 'public/' by default" do
       expect(subject.static_folder).to eql(File.expand_path('public'))
