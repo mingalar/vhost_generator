@@ -94,7 +94,7 @@ class ForemanExportApplication
              '# Default: web (must have entry of that name in Procfile)',
              lambda { |value| config.process_type = value }],
       ['-G', '--generator=GENERATOR',
-             '# Default: nginx (only supported for now)',
+             '# Default: "nginx" (try "apache" too)',
              lambda { |value| config.generator = value }],
       ['-O', '--generator-options=OPTIONS',
              '# Comma-separated list of key=value',
@@ -228,8 +228,18 @@ class ForemanExportApplication
       argv[1] # eg. /etc/init
     end
 
+    def vhost_dir
+      if config.generator == 'nginx'
+        '/etc/nginx/sites-enabled'
+      elsif config.generator == 'apache'
+        '/etc/apache2/sites-enabled'
+      else
+        raise RuntimeError, "Can't guess vhost_dir for generator=#{config.generator}"
+      end
+    end
+
     def vhost_config
-      "/etc/#{service}/sites-enabled/rails-#{app}.conf"
+      "#{vhost_dir}/vhost-#{app}.conf"
     end
 
     def escape(args)

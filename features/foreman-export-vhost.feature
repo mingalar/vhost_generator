@@ -26,7 +26,7 @@ Feature: Wrap "foreman export"
           -L, --server-ports=PORTS         # Default: 80
           -S, --server-names=NAMES         # Default: localhost
           -K, --foreman-process-type=TYPE  # Default: web (must have entry of that name in Procfile)
-          -G, --generator=GENERATOR        # Default: nginx (only supported for now)
+          -G, --generator=GENERATOR        # Default: "nginx" (try "apache" too)
           -O, --generator-options=OPTIONS  # Comma-separated list of key=value
           -N, --dry-run
           -R, --stop-start-service         # Starts and stops APP service (may not work everywhere)
@@ -43,7 +43,7 @@ Feature: Wrap "foreman export"
     When I run `bundle exec foreman-export-vhost upstart /etc/init -f Procfile -a MYAPP -u MYUSER -p 6000 -c clock=1,web=2 -L 80,81 -S localhost,myapp.com -K web -G nginx -O assets_expire_in=15d -N -R`
     Then the output should match:
       """
-      bundle exec foreman run vhost-generator -a MYAPP -f /.*/public -l 80,81 -s localhost,myapp.com -p 6100,6101 -g nginx -o assets_expire_in\\=15d \| sudo tee /etc/nginx/sites-enabled/rails-MYAPP.conf
+      bundle exec foreman run vhost-generator -a MYAPP -f /.*/public -l 80,81 -s localhost,myapp.com -p 6100,6101 -g nginx -o assets_expire_in\\=15d \| sudo tee /etc/nginx/sites-enabled/vhost-MYAPP.conf
       """
     And the output should contain:
       """

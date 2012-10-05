@@ -102,12 +102,12 @@ describe VhostGenerator::VhostConfiguration do
       expect(subject.generator).to be
     end
 
-    it "is resolved into a generator plugin" do
+    it "is set when a generator plugin exists" do
       generator = double('generator')
       subject.send(:registry).merge!('test' => generator)
       expect {
         subject.generator = 'test'
-      }.to change(subject, :generator).to generator
+      }.to change(subject, :generator).to 'test'
     end
 
     it "complains when trying to set invalid values" do

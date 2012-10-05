@@ -34,7 +34,7 @@ module VhostGenerator
       args << '-s' << @config.server_names.join(',')
       args << '-p' << @config.instance_ports.join(',')
       args << '-r' << @config.relative_root
-      args << '-g' << 'nginx' # FIXME use @config.generator when real registry
+      args << '-g' << @config.generator
       options = @config.generator_options.collect {|k,v| "#{k}=#{v}" }
       args << '-o' << options.join(',')
       args

@@ -55,7 +55,8 @@ module VhostGenerator
     end
 
     def generator=(name)
-      @generator = generator_for(name)
+      generator_for(name) # ensure generator exists
+      @generator = name
     end
 
     def generator_options=(options)
@@ -67,7 +68,7 @@ module VhostGenerator
     end
 
     def output
-      self.generator.new(self, self.generator_options).render
+      generator_for(self.generator).new(self, self.generator_options).render
     end
 
     protected
