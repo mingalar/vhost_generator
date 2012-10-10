@@ -167,7 +167,7 @@ class ForemanExportApplication
     end
 
     def apply
-      commands << %w(bundle exec foreman run vhost-generator) +
+      commands << %w(bundle exec vhost-generator) +
                   escape(generator_flags) +
                   %w(| sudo tee) + escape(vhost_config)
       commands << %w(sudo service) + escape(service) + %w(reload)
