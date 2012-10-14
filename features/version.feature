@@ -8,5 +8,5 @@ Feature: Output program version
     When I run `bundle exec vhost-generator --version`
     Then it should pass with:
       """
-      vhost-generator, version 0.3.1
+      vhost-generator, version 0.3.2
       """
