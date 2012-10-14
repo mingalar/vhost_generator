@@ -63,7 +63,7 @@ module VhostGenerator
   <% if cfg.server_names.length >= 2 %>ServerAlias <%=
        cfg.server_names[1..-1].join(' ') %><% end %>
 
-  DocumentRoot <%= cfg.static_folder %>;
+  DocumentRoot <%= cfg.static_folder %>
 
   AllowEncodedSlashes On
 
