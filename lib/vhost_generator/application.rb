@@ -131,7 +131,7 @@ module VhostGenerator
       rescue SystemExit => ex
         # Exit silently with current status
         raise
-      rescue OptionParser::InvalidOption => ex
+      rescue OptionParser::InvalidOption, ArgumentError => ex
         $stderr.puts ex.message
         exit(false)
       rescue Exception => ex
