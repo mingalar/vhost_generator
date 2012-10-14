@@ -151,7 +151,7 @@ Feature: Output nginx configuration file
       }
       """
 
-  Scenario: using environment variables, multiple upstreams
+  Scenario: using environment variables, single upstream
     When I set env variable "GENERATOR" to "nginx"
     And I set env variable "GENERATOR_OPTIONS" to "assets_expire_in=15d"
     And I set env variable "APPLICATION" to "testapp"
