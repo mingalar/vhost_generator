@@ -221,7 +221,13 @@ class ForemanExportApplication
     end
 
     def service
-      config.generator # nginx
+      if config.generator == 'nginx'
+        'nginx'
+      elsif config.generator == 'apache'
+        'apache2'
+      else
+        raise RuntimeError, "Can't guess service for generator=#{config.generator}"
+      end
     end
 
     def target
@@ -229,13 +235,7 @@ class ForemanExportApplication
     end
 
     def vhost_dir
-      if config.generator == 'nginx'
-        '/etc/nginx/sites-enabled'
-      elsif config.generator == 'apache'
-        '/etc/apache2/sites-enabled'
-      else
-        raise RuntimeError, "Can't guess vhost_dir for generator=#{config.generator}"
-      end
+      "/etc/#{service}/sites-enabled"
     end
 
     def vhost_config

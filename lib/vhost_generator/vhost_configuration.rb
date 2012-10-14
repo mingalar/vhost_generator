@@ -1,4 +1,5 @@
 require 'vhost_generator/nginx_generator'
+require 'vhost_generator/apache_generator'
 require 'shellwords'
 
 module VhostGenerator
@@ -85,7 +86,8 @@ module VhostGenerator
     attr_writer :registry
     def registry
       # XXX use a real registry to reduce coupling
-      @registry ||= {'nginx' => VhostGenerator::NginxGenerator}
+      @registry ||= {'nginx' => VhostGenerator::NginxGenerator,
+                     'apache' => VhostGenerator::ApacheGenerator}
     end
 
     def parse_word_list(s)

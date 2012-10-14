@@ -34,20 +34,20 @@ Feature: Wrap "foreman export"
           -h, -H, --help                   Display this help message.
       """
 
-  Scenario: display source that will be executed
+  Scenario Outline: display source that will be executed with generator <generator>
     Given a file named "Procfile" with:
       """
       clock:  ....
       web:   bundle exec webserver -p $PORT
       """
-    When I run `bundle exec foreman-export-vhost upstart /etc/init -f Procfile -a MYAPP -u MYUSER -p 6000 -c clock=1,web=2 -L 80,81 -S localhost,myapp.com -K web -G nginx -O assets_expire_in=15d -N -R`
+    When I run `bundle exec foreman-export-vhost upstart /etc/init -f Procfile -a MYAPP -u MYUSER -p 6000 -c clock=1,web=2 -L 80,81 -S localhost,myapp.com -K web -G <generator> -O assets_expire_in=15d -N -R`
     Then the output should match:
       """
-      bundle exec vhost-generator -a MYAPP -f /.*/public -l 80,81 -s localhost,myapp.com -p 6100,6101 -g nginx -o assets_expire_in\\=15d \| sudo tee /etc/nginx/sites-enabled/vhost-MYAPP.conf
+      bundle exec vhost-generator -a MYAPP -f /.*/public -l 80,81 -s localhost,myapp.com -p 6100,6101 -g <generator> -o assets_expire_in\\=15d \| sudo tee <config_dir>/vhost-MYAPP.conf
       """
     And the output should contain:
       """
-      sudo service nginx reload
+      sudo service <service> reload
       sudo service MYAPP stop >/dev/null 2>&1 || true
       sudo rm -rf /etc/init/MYAPP-*.conf
       """
@@ -61,3 +61,8 @@ Feature: Wrap "foreman export"
       echo "Finished, now open your browser and see if everything works."
       # Now, try to run this script again without the --dry-run switch!
       """
+
+    Scenarios:
+      | generator | service | config_dir                 |
+      | nginx     | nginx   | /etc/nginx/sites-enabled   |
+      | apache    | apache2 | /etc/apache2/sites-enabled |
