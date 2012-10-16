@@ -23,7 +23,7 @@ Feature: Output nginx configuration file
       """
     And the output should contain:
       """
-        server_name localhost, my.server;
+        server_name localhost my.server;
       """
     And the output should match /root.*html;/
     And the output should contain:
@@ -80,7 +80,7 @@ Feature: Output nginx configuration file
       """
     And the output should contain:
       """
-        server_name localhost, my.server;
+        server_name localhost my.server;
       """
     And the output should match /root.*html;/
     And the output should contain:
@@ -121,7 +121,7 @@ Feature: Output nginx configuration file
       """
     And the output should contain:
       """
-        server_name localhost, my.server;
+        server_name localhost my.server;
       """
     And the output should match /root.*html;/
     And the output should contain:
@@ -170,7 +170,7 @@ Feature: Output nginx configuration file
       """
     And the output should contain:
       """
-        server_name localhost, my.server;
+        server_name localhost my.server;
       """
     And the output should match /root.*html;/
     And the output should contain:

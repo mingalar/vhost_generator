@@ -55,7 +55,7 @@ describe VhostGenerator::NginxGenerator do
 
     it "declares the server names it responds to" do
       config.stub(:server_names).and_return(%w(host1 host2))
-      expect(output).to include('server_name host1, host2;')
+      expect(output).to include('server_name host1 host2;')
     end
 
     it "declares the requested document root" do

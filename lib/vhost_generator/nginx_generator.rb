@@ -49,7 +49,7 @@ server {
   <% cfg.server_ports.each do |p| %>listen <%= p %>;
   <% end %>
   <% unless cfg.server_names.empty? %>server_name <%=
-       cfg.server_names.join(', ') %>;<% end %>
+       cfg.server_names.join(' ') %>;<% end %>
 
   root <%= cfg.static_folder %>;
 
